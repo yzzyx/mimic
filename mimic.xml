@@ -1,0 +1,60 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<mimic>
+	<shortcuts>
+		<shortcut>
+			<name>Directories</name>
+			<type>label</type>
+		</shortcut>
+		<shortcut>
+			<name> Movies</name>
+			<path>/shared/movies</path>
+			<type>browser</type>
+			<filter>.asf;.avi;.divx;.dvr-ms;.flv;.m1v;.m2v;.m4p;.m4v;.mkv;.mov;.mp4;.mp4v;.mpe;.mpeg;.mpg;.ogm;.qt;.rm;.rmvb;.swf;.ts;.vdr    ;.vob;.vro;.wmv;.y4m</filter>
+		</shortcut>
+		<shortcut>
+			<name> Music</name>
+			<path>/shared/music</path>
+			<type>browser</type>
+			<filter>.3gp;.aac;.ape;.apl;.flac;.m4a;.mac;.mka;.mp2;.mp3;.mp4;.mpc;.ogg;.ra;.wav;.wma</filter>
+		</shortcut>
+		<shortcut>
+			<name> Browse files</name>
+			<path>/shared</path>
+			<type>browser</type>
+		</shortcut>
+		<shortcut>
+			<name>Programs</name>
+			<type>label</type>
+		</shortcut>
+		<shortcut>
+			<name> Radio</name>
+			<exec>dradio</exec>
+			<type>exec</type>
+		</shortcut>
+		<shortcut>
+			<name> Fortune cookie</name>
+			<exec>fortune -o</exec>
+			<type>exec</type>
+			<showresult />
+		</shortcut>
+		<shortcut>
+			<name>Connected devices</name>
+			<type>label</type>
+		</shortcut>
+		<shortcut>
+			<name>xxx</name>
+			<type>automount-list</type>
+			<path>/mnt</path>
+		</shortcut>
+	</shortcuts>
+	<settings>
+		<colors>
+			<background color='blue' />
+			<text color='white' />
+			<directory color='white' attribute='bold' />
+			<label color='white' attribute='underline'/>
+			<frame color='white' attribute='' />
+		</colors>
+		<handler exec="mplayer -really-quiet %" filter=".asf;.avi;.divx;.dvr-ms;.flv;.m1v;.m2v;.m4p;.m4v;.mkv;.mov;.mp4;.mp4v;.mpe;.mpeg;.mpg;.ogm;.qt;.rm;.rmvb;.swf;.ts;.vdr;.vob;.vro;.wmv;.y4m" />
+	</settings>
+</mimic>

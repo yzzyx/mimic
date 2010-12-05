@@ -1,0 +1,42 @@
+[ ] autologin box/amjam123
+[x] setup CIFS-server
+[x] bug med filmer som spelas direkt från en "huvudmapp"
+[ ] kunna ställa in olika "hanterare" för olika filtyper/filändelser
+
+Rtorrent
+[x] setup rtorrent
+[x] setup rtorrent-web (RTPG)
+[ ] lägg till signal-hanterare till rtorrent för att (temporärt) pausa alla aktiva torrenter 
+    alternativt stoppa rtorrent när man kollar på film, och sedan köra igång det igen när
+    man är klar (kontrollera om detta behövs?)
+
+mimic
+ [ ] fixa så att mimic använder dtach för rtorrent
+ [ ] automount - lista nyinkopplade saker
+ [ ] möjlighet att läsa info från t.ex. open movie database
+    [ ] http://api.themoviedb.org/2.1/Movie.search/en/xml/6092139ad683f50d6d2737069f18de42/Fight+Club
+    [ ] http://api.themoviedb.org/2.1/Movie.getInfo/en/xml/6092139ad683f50d6d2737069f18de42/550
+ [x] Resize !
+ [ ] make labels unselectable
+ [x] inte använda menu - gör egen lista
+ [x] listan kan ej "scrolla"
+ [x] när man kollat på en film t.ex. så skall vald fil ej bli den första
+ [x] bättre färger
+ [x] sortering av lista
+ [x] PGDN/PGUP/HOME/END i lista
+ [x] config-fil
+ [x] inställningsbara färger
+ [x] "shortcuts"
+ [x] vertikal delning, vänster filer, höger info (eller playlist)
+ [.] vid filvisning - ha en "header" som visar var man är
+ [ ] ha en "mplayer"-modul där man kan lägga till i playlist för musik
+ [ ] stöd för UTF-8
+ [x] en "redraw_all()"-funktion, som man kan köra efter externa program
+     sabbat fönstrena
+ [ ] LIRC
+ [x] expat
+ [ ] autoconf 
+ [ ] savannah
+ [x] redraw efter exekvering
+ [ ] fixa segfault vid shortcut till icke-existerande path
+
