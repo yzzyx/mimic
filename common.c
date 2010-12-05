@@ -221,7 +221,8 @@ int run_program_output( char *program, char *arg)
 	int output_n_lines;
 	int max_width, max_height;
 
-	int i, ch;
+	char ch[1];
+	int i,j;
 
 	n_args = build_arg_list(program, arg, &arg_list);
 
@@ -273,54 +274,56 @@ int run_program_output( char *program, char *arg)
 		return -1;
 	}
 
-	while( read(pipe_fd[0], &ch, 1) ){
-
-		if( ch == '\n' ){
+	while( read(pipe_fd[0], ch, 1) ){
+		if( *ch == '\n'  || *ch == '\r' ){
 			if( output_pos > output_width )
 				output_width = output_pos;
 
 			output[output_n_lines-1][output_pos] = '\0';
+
+			output_n_lines ++;
 
 			if ( output_n_lines ==  max_height - 1 ){
 				close(pipe_fd[0]);
 				break;
 			}
 
-			output_n_lines ++;
 			if( (output = realloc(output, output_n_lines * sizeof(char *))) == NULL ){
-				delwin(win);
 				return -1;
 			}
 
 			if( (output[output_n_lines-1] = malloc(max_width*sizeof(char))) == NULL ){
-				delwin(win);
 				free(output);
 				return -1;
 			}
+
 			output_pos = 0;
-
-
 			continue;
 		}
-
-		if( ch == '\t' ) ch = ' ';
+		
+		if( *ch == '\t' ) *ch = ' ';
 
 		if( output_pos < max_width )
-			output[output_n_lines-1][output_pos++] = ch;
+			output[output_n_lines-1][output_pos++] = *ch;
 	}
+
 	output[output_n_lines-1][output_pos] = '\0';
+	if( output_pos > output_width )
+		output_width = output_pos;
 
 	output_n_lines ++;
 	if( (output = realloc(output, output_n_lines * sizeof(char *))) == NULL ){
-		delwin(win);
 		return -1;
 	}
 
 	if( (output[output_n_lines-1] = malloc(max_width*sizeof(char))) == NULL ){
-		delwin(win);
 		free(output);
 		return -1;
 	}
+
+	if( output_width < 16 )
+		output_width = 16; 
+
 	snprintf(output[output_n_lines-1], max_width - 1, "%*s", output_width / 2 + 8, "[Press any key]");
 
 	waitpid( pid, &status, 0);
@@ -331,6 +334,11 @@ int run_program_output( char *program, char *arg)
 
 	for(i=0;i<output_n_lines;i++){
 		mvwprintw(win, i+1, 1, "%s", output[i]);
+		/*
+		for(j=0;j<16,output[i][j]!=0x00;j++){
+			mvwprintw(win, i+1, j*3, "%.2x ", output[i][j]);
+		}
+		*/
 		free(output[i]);
 	}
 	free(output);
@@ -364,7 +372,7 @@ int run_file_handler( char *path )
 		handler = node->data;
 		if( dir_check_filter(path, handler->filter) ){
 			if( handler->exec[0] == '!' ) /* Show result in window */
-				retval = run_program_output(handler->exec+1, path);
+				retval = run_program_output(handler->exec+2, path);
 			else
 				retval = run_program(handler->exec, path);
 			return retval;
