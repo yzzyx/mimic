@@ -66,8 +66,8 @@ int dir_get_list(dl_list **list, char *path, char *filter, int include_parent)
 	n_entries = 0;
 
 	dir = opendir(path);
-	if( dir == NULL ) 
-		return 0;
+	if( dir == NULL )
+		return -1;
 
 	while( (dent = readdir(dir)) != NULL ){
 		if( (dent->d_name[0] == '.' && dent->d_name[1] != '.' ) || 
@@ -136,6 +136,9 @@ int directory_list(SHORTCUT_SETTINGS *dir_settings)
 
 	path = NULL;
 	n_entries = dir_get_list(&list, dir_settings->path, dir_settings->filter, 1);
+
+	if (n_entries == -1)
+		return -1;
 
 	visual_list = NULL;
 	/* Order list */
