@@ -10,12 +10,13 @@
 
 int main(int argc, char **argv)
 {
+	WINDOW *win;
 	settings.shortcut_settings = NULL;
 	settings.handlers = NULL;
 	if( load_config() == -1 )
 		return -1;
 
-	initscr();
+	win = initscr();
 	start_color();
 	cbreak();
 	noecho();
@@ -37,7 +38,9 @@ int main(int argc, char **argv)
 	delwin(__win_list);
 	delwin(__win_main);
 
+	delwin(win);
 	endwin();
+	free_config();
 
 	return 0;
 }

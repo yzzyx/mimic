@@ -29,6 +29,8 @@ void dl_list_free_int(dl_list *list, int free_data)
 {
 	dl_list *node, *tmp;
 
+	if( ! list ) return;
+
 	node = list;
 	while( node->prev ) node = node->prev;
 

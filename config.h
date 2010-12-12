@@ -66,5 +66,6 @@ extern SETTINGS settings;
 #endif
 
 int load_config();
+void free_config();
 
 #endif

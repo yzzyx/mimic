@@ -359,3 +359,45 @@ int load_config()
 
 	return 0;
 }
+
+void free_config()
+{
+	dl_list *node;
+	SHORTCUT_SETTINGS *s;
+	HANDLER *h;
+
+	node = settings.shortcut_settings;
+	while( node && node->prev ) node = node->prev;
+
+	while( node ){
+		s = (SHORTCUT_SETTINGS *)node->data;
+
+		if( s->name ) free(s->name);
+		if( s->path ) free(s->path);
+		if( s->filter ) free(s->filter);
+		if( s->exec ) free(s->exec);
+		if( s->type_str ) free(s->type_str);
+
+		free(s);
+		node = node->next;
+	}
+	if( settings.shortcut_settings )
+		dl_list_free(settings.shortcut_settings);
+
+	node = settings.handlers;
+	while( node && node->prev ) node = node->prev;
+
+	while( node ){
+		h = (HANDLER *)node->data;
+
+		if( h->exec ) free(h->exec);
+		if( h->filter ) free(h->filter);
+
+		free(h);
+		node = node->next;
+	}
+	if( settings.handlers )
+		dl_list_free(settings.handlers);
+	
+
+}

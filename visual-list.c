@@ -73,6 +73,7 @@ void vl_int_draw_list(WINDOW *win,
 	vl_entry *ent;
 	char buf[10];
 	int line;
+	int tmp_attr;
 
 	short std_color_pair;
 	attr_t std_attr;
@@ -84,7 +85,7 @@ void vl_int_draw_list(WINDOW *win,
 	do{
 		ent = (vl_entry *)start_entry->data;
 		if( ent->attributes)
-			wattrset(win, ent->attributes);
+			tmp_attr = wattrset(win, ent->attributes);
 
 		if(start_entry == sel_entry )
 			wattron(win,A_STANDOUT);
@@ -92,7 +93,7 @@ void vl_int_draw_list(WINDOW *win,
 		mvwprintw(win, line, 0, buf, ent->str);
 
 		if( ent->attributes)
-			wattrset(win, std_attr);
+			tmp_attr = wattrset(win, std_attr);
 		if(start_entry == sel_entry )
 			wattroff(win,A_STANDOUT);
 
@@ -157,8 +158,6 @@ unsigned int vl_draw_list(WINDOW *win, vl_list *list, void **current_entry_user_
 		key = wgetch(win);
 		switch(key){
 			case KEY_UP:
-			case 'K':
-			case 'k':
 				if(list->selected_entry->prev != NULL){
 					update = TRUE;
 					if( list->selected_entry == list->first_visible_entry ){		/* Time to scroll (UPWARDS) */
@@ -171,8 +170,6 @@ unsigned int vl_draw_list(WINDOW *win, vl_list *list, void **current_entry_user_
 				}
 				break;
 			case KEY_DOWN:
-			case 'J':
-			case 'j':
 				if(list->selected_entry->next != NULL){
 					update = TRUE;
 					if( list->selected_entry == list->last_visible_entry ){	/* Time to scroll (DOWNWARDS) */
