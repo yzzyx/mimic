@@ -121,40 +121,27 @@ int dir_sort( void *ptr1, void *ptr2 )
 	return strcasecmp(d1->name, d2->name);
 }
 
-int directory_list(SHORTCUT_SETTINGS *dir_settings)
+vl_list *directory_create_visual_list(dl_list *list, const char const*filter)
 {
-	dl_list *list, *node;
+	dl_list *node;
 	vl_list *visual_list;
-	int n_entries;
 	__dir_entry *de;
-	char *path, *ptr;
-	char *filename_path;
-	WINDOW *path_win, *list_win;
-
-	int i, ch;
-	int win_h, win_w;
-
-	path = NULL;
-	n_entries = dir_get_list(&list, dir_settings->path, dir_settings->filter, 1);
+	int i;
 
 	visual_list = NULL;
-	/* Order list */
-	list = dl_list_qsort(list, dir_sort);
-
-	/* Create sub-windows */
-	getmaxyx(__win_list, win_h, win_w);
-	path_win = derwin(__win_list, 1, win_w - 2, 0, 1);
-	list_win = derwin(__win_list, win_h - 2, win_w - 2, 1, 1);
-	keypad(list_win, TRUE);
-
-	/* Create menu */
-
 	i = 0; node = list;
+
 	while( node && node->prev )
 		node = node->prev;
 
 	while( node ){
 		de = node->data;
+			
+		if( filter && ! strstr(de->name, filter) && 
+			!(de->name[0] == '.' && de->name[1] == '.' ) ){
+			node = node->next;
+			continue;
+		}
 		if( de->type & DT_DIR ){
 			visual_list = vl_list_add(visual_list, de->name, COLOR_PAIR(COLOR_PAIR_DIR) | settings.attr_dir, de);
 		}else
@@ -162,6 +149,51 @@ int directory_list(SHORTCUT_SETTINGS *dir_settings)
 		node = node->next;
 		i ++;
 	}
+
+	return visual_list;
+}
+
+
+int directory_list(SHORTCUT_SETTINGS *dir_settings)
+{
+	dl_list *list, *node;
+	vl_list *visual_list;
+	__dir_entry *de;
+	int n_entries;
+	char *path, *ptr;
+	char *filename_path;
+	char *current_filter;
+	int filter_len, max_filter_len;
+	WINDOW *path_win, *list_win;
+
+	int i, ch;
+	int win_h, win_w;
+
+	/* Create sub-windows */
+	getmaxyx(__win_list, win_h, win_w);
+	path_win = derwin(__win_list, 1, win_w - 2, 0, 1);
+	list_win = derwin(__win_list, win_h - 2, win_w - 2, 1, 1);
+	keypad(list_win, TRUE);
+
+	/* Allocate memory for filter */
+	max_filter_len = 120;
+	if( (current_filter = malloc(max_filter_len * sizeof(char))) == NULL ){
+		dl_list_free(list);
+		delwin(path_win);
+		delwin(list_win);
+		return -1;
+	}
+
+	filter_len = 0;
+
+	path = NULL;
+	n_entries = dir_get_list(&list, dir_settings->path, dir_settings->filter, 1);
+
+	/* Order list */
+	list = dl_list_qsort(list, dir_sort);
+
+	/* Create menu */
+	visual_list = directory_create_visual_list(list, NULL);
 
 	/* print path (from base_path) */
 	wmove(path_win, 0, 0);
@@ -175,6 +207,11 @@ int directory_list(SHORTCUT_SETTINGS *dir_settings)
 			case KEY_ENTER:
 				/* Enter directory ? */
 				if( de->type & DT_DIR ){
+
+					/* Clear filter */
+					filter_len = 0;
+					current_filter[0] = 0x00;
+
 					if ( de->name[0] == '.' && de->name[1] == '.' && de->name[2] == '\0' ){
 
 						/* We've reached the top node */
@@ -283,6 +320,9 @@ int directory_list(SHORTCUT_SETTINGS *dir_settings)
 					free(filename_path);
 
 					/* Redraw window */
+					delwin(path_win);
+					delwin(list_win);
+
 					create_window_all();
 					getmaxyx(__win_list, win_h, win_w);
 					path_win = derwin(__win_list, 1, win_w - 2, 0, 1);
@@ -298,6 +338,10 @@ int directory_list(SHORTCUT_SETTINGS *dir_settings)
 			break;
 			case CTRL('l'):
 			case KEY_RESIZE:
+
+				delwin(path_win);
+				delwin(list_win);
+
 				create_window_all();
 				getmaxyx(__win_list, win_h, win_w);
 				path_win = derwin(__win_list, 1, win_w - 2, 0, 1);
@@ -307,9 +351,29 @@ int directory_list(SHORTCUT_SETTINGS *dir_settings)
 				mvwprintw(path_win, 0, 0, "%s", path);
 				wrefresh(path_win);
 			break;
+			default: /* Add to list filter */
 
+				if( ch == (CTRL('u')) ){ /* Clear filter */
+					filter_len = 0;
+				}else if( ch == KEY_BACKSPACE ) {
+					if( filter_len > 0 ) filter_len --;
+				}else if( strlen(current_filter) < max_filter_len )
+					current_filter[filter_len++] = ch; 
+				current_filter[filter_len] = 0x00;
+
+				/* Create menu with filter applied */
+				vl_free_list(visual_list);
+				visual_list = directory_create_visual_list(list, current_filter);
+				wclear(list_win);
 		}
 
+
+		
+		mvwhline(__win_list, win_h -1, 1, ACS_HLINE, win_w - 2);
+		if( filter_len ){
+			mvwprintw( __win_list , win_h - 1, 1, current_filter);
+		}
+		wrefresh(__win_list);
 
 		wrefresh(list_win);
 		doupdate();
@@ -318,6 +382,7 @@ int directory_list(SHORTCUT_SETTINGS *dir_settings)
 			break;
 	}
 
+	free(current_filter);
 	vl_free_list(visual_list);
 	node = list;
 	/* Free node data */
