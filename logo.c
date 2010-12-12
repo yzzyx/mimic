@@ -1,4 +1,4 @@
-#include <curses.h>
+#include <ncursesw/ncurses.h>
 
 static char *logo[] = {
 	"    ___                ____  ",

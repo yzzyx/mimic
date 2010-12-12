@@ -5,7 +5,7 @@
 #include <errno.h>
 #include <sys/types.h>
 #include <sys/wait.h>
-#include <curses.h>
+#include <ncursesw/ncurses.h>
 #include "config.h"
 #include "directory.h"
 

@@ -1,8 +1,8 @@
 CC?=gcc
 CFLAGS+=-Wall -g
-LDFLAGS+=-lcurses -lexpat
+LDFLAGS+=-lncursesw -lexpat
 
-OBJECTS=main.o directory.o list.o logo.o visual-list.o common.o config.o shortcut.o
+OBJECTS=main.o directory.o list.o logo.o visual-list.o common.o config.o shortcut.o utf8.o
 
 mimic: $(OBJECTS)
 	$(CC) -o mimic $(LDFLAGS) $(OBJECTS)

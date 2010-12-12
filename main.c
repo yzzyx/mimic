@@ -1,4 +1,5 @@
-#include <curses.h>
+#include <ncursesw/ncurses.h>
+#include <locale.h>
 #include <menu.h>
 #include <sys/types.h>
 #include <stdlib.h>
@@ -11,6 +12,10 @@
 int main(int argc, char **argv)
 {
 	WINDOW *win;
+
+	/* Needed for ncursesw */
+	setlocale(LC_ALL, "");
+
 	settings.shortcut_settings = NULL;
 	settings.handlers = NULL;
 	if( load_config() == -1 )

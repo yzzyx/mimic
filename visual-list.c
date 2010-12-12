@@ -1,9 +1,10 @@
 #include <sys/time.h>
 #include <sys/types.h>
-#include <curses.h>
+#include <ncursesw/ncurses.h>
 #include <stdlib.h>
 #include "list.h"
 #include "visual-list.h"
+#include "utf8.h"
 
 #define TRUE	1
 #define FALSE	0
@@ -71,9 +72,9 @@ void vl_int_draw_list(WINDOW *win,
 	dl_list *stop_entry)
 {
 	vl_entry *ent;
-	char buf[10];
 	int line;
 	int tmp_attr;
+	int utf8_len;
 
 	short std_color_pair;
 	attr_t std_attr;
@@ -81,7 +82,6 @@ void vl_int_draw_list(WINDOW *win,
 	wattr_get(win, &std_attr, &std_color_pair, NULL);
 	line = 0;
 
-	sprintf(buf, "%%-%ds", width);
 	do{
 		ent = (vl_entry *)start_entry->data;
 		if( ent->attributes)
@@ -89,8 +89,10 @@ void vl_int_draw_list(WINDOW *win,
 
 		if(start_entry == sel_entry )
 			wattron(win,A_STANDOUT);
-
-		mvwprintw(win, line, 0, buf, ent->str);
+		
+		mvwaddstr(win, line, 0, ent->str);
+		utf8_len = utf8_strlen(ent->str);
+		mvwhline(win, line, utf8_len, ' ', width - utf8_len);
 
 		if( ent->attributes)
 			tmp_attr = wattrset(win, std_attr);

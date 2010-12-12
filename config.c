@@ -2,7 +2,7 @@
 #include <expat.h>
 #include <string.h>
 #include <ctype.h>
-#include <curses.h>
+#include <ncursesw/ncurses.h>
 #include "list.h"
 #include "common.h"
 #define __INT_CONFIG	1

@@ -1,4 +1,4 @@
-#include <curses.h>
+#include <ncursesw/ncurses.h>
 #include <menu.h>
 #include <sys/types.h>
 #include <dirent.h>
@@ -88,7 +88,25 @@ vl_list *shortcut_create_vl_list(dl_list *shortcut_list)
 		node = node->next;
 	}
 
-	if( dir_list ) dl_list_free(dir_list);
+	if( dir_list ){
+		dl_list *node;
+
+		node = dir_list;
+		/* Free node data */
+		while( node && node->prev)
+			node = node->prev;
+		while( node && node->next ){
+			free(((__dir_entry*)node->data)->name);
+			free(node->data);
+			node = node->next;
+		}
+		/* Free last entry */
+		if( node ){
+			free(((__dir_entry*)node->data)->name);
+			free(node->data);
+		}
+		dl_list_free(dir_list);
+	}
 
 	return visual_list;
 }

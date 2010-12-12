@@ -1,4 +1,4 @@
-#include <curses.h>
+#include <ncursesw/ncurses.h>
 #include <menu.h>
 #include <sys/types.h>
 #include <dirent.h>
