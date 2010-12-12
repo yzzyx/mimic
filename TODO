@@ -38,5 +38,6 @@ mimic
  [ ] autoconf 
  [ ] savannah
  [x] redraw efter exekvering
- [ ] fixa segfault vid shortcut till icke-existerande path
+ [x] fixa segfault vid shortcut till icke-existerande path
+ [ ] Debug-hantering
 
