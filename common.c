@@ -372,7 +372,7 @@ int run_file_handler( char *path )
 		handler = node->data;
 		if( dir_check_filter(path, handler->filter) ){
 			if( handler->exec[0] == '!' ) /* Show result in window */
-				retval = run_program_output(handler->exec+2, path);
+				retval = run_program_output(handler->exec+1, path);
 			else
 				retval = run_program(handler->exec, path);
 			return retval;
