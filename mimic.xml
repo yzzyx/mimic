@@ -34,7 +34,7 @@
 		<shortcut>
 			<name> Fortune cookie</name>
 			<exec>fortune -o</exec>
-			<type>exec</type>
+			<type>exec_show</type>
 			<showresult />
 		</shortcut>
 		<shortcut>
