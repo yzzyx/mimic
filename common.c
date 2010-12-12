@@ -222,7 +222,7 @@ int run_program_output( char *program, char *arg)
 	int max_width, max_height;
 
 	char ch[1];
-	int i,j;
+	int i;
 
 	n_args = build_arg_list(program, arg, &arg_list);
 

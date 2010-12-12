@@ -122,7 +122,7 @@ static void XMLCALL start(void *user_data, const XML_Char *el, const XML_Char **
 	SHORTCUT_SETTINGS *ss_ptr;
 	int t_color, t_attr;
 	int i,j;
-	char *ptr, *end_ptr;
+	char const *ptr, *end_ptr;
 
 	if( depth == 0 && strcmp(el, "mimic") == 0 )
 		c_element = ELEMENT_MIMIC;
