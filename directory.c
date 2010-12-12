@@ -50,7 +50,7 @@ int dir_check_filter(char *file, char *filter)
 
 		filter = next;
 	}while(next);
-	
+
 	return 0;
 }
 
@@ -81,14 +81,14 @@ int dir_get_list(dl_list **list, char *path, char *filter, int include_parent)
 			dent->d_name[0] == '.' && dent->d_name[1] == '.' &&
 			dent->d_name[2] == '\0' )
 			continue;
-		
+
 		if( (dir_entry = malloc(sizeof(__dir_entry))) == NULL ){
 			perror("malloc()");
 			return -1;
 		}
 
 		dir_entry->type = dent->d_type;
-		
+
 		if( (dir_entry->name = strdup(dent->d_name)) == NULL ){
 			perror("malloc()");
 			return -1;
@@ -136,7 +136,7 @@ vl_list *directory_create_visual_list(dl_list *list, const char const*filter)
 
 	while( node ){
 		de = node->data;
-			
+
 		if( filter && ! strstr(de->name, filter) && 
 			!(de->name[0] == '.' && de->name[1] == '.' ) ){
 			node = node->next;
@@ -159,6 +159,7 @@ int directory_list(SHORTCUT_SETTINGS *dir_settings)
 	dl_list *list, *node;
 	vl_list *visual_list;
 	__dir_entry *de;
+	int exit_code;
 	int n_entries;
 	char *path, *ptr;
 	char *filename_path;
@@ -168,6 +169,8 @@ int directory_list(SHORTCUT_SETTINGS *dir_settings)
 
 	int i, ch;
 	int win_h, win_w;
+
+	exit_code = 0;
 
 	/* Create sub-windows */
 	getmaxyx(__win_list, win_h, win_w);
@@ -188,6 +191,11 @@ int directory_list(SHORTCUT_SETTINGS *dir_settings)
 
 	path = NULL;
 	n_entries = dir_get_list(&list, dir_settings->path, dir_settings->filter, 1);
+
+	if (n_entries == -1)
+		return -1;
+
+	visual_list = NULL;
 
 	/* Order list */
 	list = dl_list_qsort(list, dir_sort);
@@ -252,6 +260,8 @@ int directory_list(SHORTCUT_SETTINGS *dir_settings)
 
 					vl_free_list(visual_list);
 
+					visual_list = NULL;
+
 					node = list;
 					/* Free node data */
 					while( node && node->prev)
@@ -266,14 +276,21 @@ int directory_list(SHORTCUT_SETTINGS *dir_settings)
 						free(((__dir_entry*)node->data)->name);
 						free(node->data);
 					}
-						
+
 					dl_list_free(list);
+
+					list = NULL;
 
 					ptr = malloc(strlen(path) + strlen(dir_settings->path) + 2);
 					/* FIXME! check return */ 
 					sprintf(ptr, "%s/%s", dir_settings->path, path );
 
 					n_entries = dir_get_list(&list, ptr, dir_settings->filter, 1);
+
+					if (n_entries == -1) {
+						exit_code = -1;
+						goto end_function;
+					}
 
 					free(ptr);
 					list = dl_list_qsort(list, dir_sort);
@@ -297,7 +314,7 @@ int directory_list(SHORTCUT_SETTINGS *dir_settings)
 					werase(list_win);
 				}else{	/* Launch program ? */
 					if( path == NULL ){
-						
+
 						if( (filename_path = malloc( strlen(dir_settings->path) + strlen(de->name) + 3)) == NULL ){
 							perror("malloc()");
 							return -1;
@@ -368,7 +385,7 @@ int directory_list(SHORTCUT_SETTINGS *dir_settings)
 		}
 
 
-		
+
 		mvwhline(__win_list, win_h -1, 1, ACS_HLINE, win_w - 2);
 		if( filter_len ){
 			mvwprintw( __win_list , win_h - 1, 1, current_filter);
@@ -382,8 +399,12 @@ int directory_list(SHORTCUT_SETTINGS *dir_settings)
 			break;
 	}
 
+end_function:
 	free(current_filter);
-	vl_free_list(visual_list);
+
+	if (visual_list)
+		vl_free_list(visual_list);
+
 	node = list;
 	/* Free node data */
 	while( node && node->prev)
@@ -398,9 +419,11 @@ int directory_list(SHORTCUT_SETTINGS *dir_settings)
 		free(((__dir_entry*)node->data)->name);
 		free(node->data);
 	}
-	dl_list_free(list);
+
+	if (list)
+		dl_list_free(list);
 
 	free(path);
 
-	return 0;
+	return exit_code;
 }
