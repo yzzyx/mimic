@@ -122,20 +122,20 @@ int dir_sort( void *ptr1, void *ptr2 )
 	return strcasecmp(d1->name, d2->name);
 }
 
-vl_list *directory_create_visual_list(dl_list *list, const char const*filter)
+int directory_create_visual_list(vl_list **ret_list, dl_list *list, const char const*filter)
 {
 	dl_list *node;
 	vl_list *visual_list;
 	__dir_entry *de;
 	char *filter_uppercase, *name_cpy, *ptr;
-	int i;
+	int n_entries;
 
 	visual_list = NULL;
-	i = 0; node = list;
+	n_entries = 0; node = list;
 
 	if( filter ){
 		filter_uppercase = strdup(filter);
-		if( filter_uppercase == NULL ) return visual_list;
+		if( filter_uppercase == NULL ) return 0;
 		for(ptr=filter_uppercase;*ptr != '\0';ptr++) *ptr = toupper(*ptr);
 	}
 
@@ -145,10 +145,13 @@ vl_list *directory_create_visual_list(dl_list *list, const char const*filter)
 	while( node ){
 		de = node->data;
 
-		if( filter && ( de->name[0] != '.' && de->name[1] != '.' ) ){
+		if( filter && !( strlen(de->name) == 2 && 
+				de->name[0] == '.' &&
+				de->name[1] == '.' &&
+				de->name[2] == '\0' ) ){
 			/* Create an uppercase copy of the name */
 			if( (name_cpy = strdup(de->name)) == NULL )
-				return visual_list;
+				return 0;
 
 			for(ptr=name_cpy;*ptr != '\0';ptr++) *ptr = toupper(*ptr);
 		
@@ -165,12 +168,14 @@ vl_list *directory_create_visual_list(dl_list *list, const char const*filter)
 		}else
 			visual_list = vl_list_add(visual_list, de->name, COLOR_PAIR(COLOR_PAIR_TEXT) | settings.attr_text, de);
 		node = node->next;
-		i ++;
+		n_entries ++;
 	}
 
 	if( filter ) free(filter_uppercase);
 
-	return visual_list;
+	*ret_list = visual_list;
+
+	return n_entries;
 }
 
 
@@ -180,7 +185,7 @@ int directory_list(SHORTCUT_SETTINGS *dir_settings)
 	vl_list *visual_list;
 	__dir_entry *de;
 	int exit_code;
-	int n_entries;
+	int n_entries, prev_n_entries;
 	char *path, *ptr;
 	char *filename_path;
 	char *current_filter;
@@ -221,7 +226,7 @@ int directory_list(SHORTCUT_SETTINGS *dir_settings)
 	list = dl_list_qsort(list, dir_sort);
 
 	/* Create menu */
-	visual_list = directory_create_visual_list(list, NULL);
+	prev_n_entries = directory_create_visual_list( &visual_list, list, NULL);
 
 	/* print path (from base_path) */
 	wmove(path_win, 0, 0);
@@ -315,23 +320,13 @@ int directory_list(SHORTCUT_SETTINGS *dir_settings)
 					free(ptr);
 					list = dl_list_qsort(list, dir_sort);
 
-					visual_list = NULL;
+					n_entries = directory_create_visual_list( &visual_list, list, NULL);
 
-					i = 0; node = list;
-					while( node && node->prev )
-						node = node->prev;
-
-					while( node ){
-						de = node->data;
-						if( de->type & DT_DIR ){
-							visual_list = vl_list_add(visual_list, de->name, COLOR_PAIR(COLOR_PAIR_DIR) | settings.attr_dir, de);
-						}else
-							visual_list = vl_list_add(visual_list, de->name, COLOR_PAIR(COLOR_PAIR_TEXT) | settings.attr_text, de);
-						node = node->next;
-						i ++;
+					if( n_entries < prev_n_entries ){
+						for(i=n_entries;i<prev_n_entries;i++)
+							mvwhline(list_win, i, 0, ' ', win_w - 2);
 					}
-
-					werase(list_win);
+					prev_n_entries = n_entries;
 				}else{	/* Launch program ? */
 					if( path == NULL ){
 
@@ -400,8 +395,14 @@ int directory_list(SHORTCUT_SETTINGS *dir_settings)
 
 				/* Create menu with filter applied */
 				vl_free_list(visual_list);
-				visual_list = directory_create_visual_list(list, current_filter);
-				wclear(list_win);
+				n_entries = directory_create_visual_list(&visual_list, list, current_filter);
+
+				/* Clear differing rows */
+				if( n_entries < prev_n_entries ){
+					for(i=n_entries;i<prev_n_entries;i++)
+						mvwhline(list_win, i, 0, ' ', win_w - 2);
+				}
+				prev_n_entries = n_entries;
 		}
 
 
