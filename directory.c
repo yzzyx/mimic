@@ -66,8 +66,8 @@ int dir_get_list(dl_list **list, char *path, char *filter, int include_parent)
 	n_entries = 0;
 
 	dir = opendir(path);
-	if( dir == NULL ) 
-		return 0;
+	if( dir == NULL )
+		return -1;
 
 	while( (dent = readdir(dir)) != NULL ){
 		if( (dent->d_name[0] == '.' && dent->d_name[1] != '.' ) || 
