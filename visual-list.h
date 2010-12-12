@@ -1,6 +1,6 @@
 #ifndef __VISUAL_LIST_H
 #define __VISUAL_LIST_H
-#include <curses.h>
+#include <ncursesw/ncurses.h>
 #include "list.h"
 
 typedef struct __vl_list vl_list;
