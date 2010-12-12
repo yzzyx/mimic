@@ -4,6 +4,7 @@
 #include <dirent.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 #include "list.h"
 #include "visual-list.h"
 #include "common.h"
@@ -126,10 +127,17 @@ vl_list *directory_create_visual_list(dl_list *list, const char const*filter)
 	dl_list *node;
 	vl_list *visual_list;
 	__dir_entry *de;
+	char *filter_uppercase, *name_cpy, *ptr;
 	int i;
 
 	visual_list = NULL;
 	i = 0; node = list;
+
+	if( filter ){
+		filter_uppercase = strdup(filter);
+		if( filter_uppercase == NULL ) return visual_list;
+		for(ptr=filter_uppercase;*ptr != '\0';ptr++) *ptr = toupper(*ptr);
+	}
 
 	while( node && node->prev )
 		node = node->prev;
@@ -137,11 +145,21 @@ vl_list *directory_create_visual_list(dl_list *list, const char const*filter)
 	while( node ){
 		de = node->data;
 
-		if( filter && ! strstr(de->name, filter) && 
-			!(de->name[0] == '.' && de->name[1] == '.' ) ){
-			node = node->next;
-			continue;
+		if( filter && ( de->name[0] != '.' && de->name[1] != '.' ) ){
+			/* Create an uppercase copy of the name */
+			if( (name_cpy = strdup(de->name)) == NULL )
+				return visual_list;
+
+			for(ptr=name_cpy;*ptr != '\0';ptr++) *ptr = toupper(*ptr);
+		
+			if( ! strstr(name_cpy, filter_uppercase) ){
+				node = node->next;
+				free(name_cpy);
+				continue;
+			}
+			free(name_cpy);
 		}
+
 		if( de->type & DT_DIR ){
 			visual_list = vl_list_add(visual_list, de->name, COLOR_PAIR(COLOR_PAIR_DIR) | settings.attr_dir, de);
 		}else
@@ -149,6 +167,8 @@ vl_list *directory_create_visual_list(dl_list *list, const char const*filter)
 		node = node->next;
 		i ++;
 	}
+
+	if( filter ) free(filter_uppercase);
 
 	return visual_list;
 }
