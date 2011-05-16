@@ -141,7 +141,11 @@ int shortcut_list(dl_list *list)
 				/* Launch program ? */
 				}else if( ss_ptr->type == SHORTCUT_TYPE_EXEC  ){	
 					run_program(ss_ptr->exec, "");
-					werase(list_win);
+
+					create_window_all();
+					getmaxyx( __win_list, win_h, win_w );
+					list_win = derwin(__win_list, win_h - 2, win_w - 2, 1, 1);
+					keypad(list_win, TRUE);
 				}else if( ss_ptr->type == SHORTCUT_TYPE_EXEC_SHOW ){
 					run_program_output(ss_ptr->exec, "");
 					werase(list_win);

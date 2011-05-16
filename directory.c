@@ -15,6 +15,9 @@ typedef struct{
 	char *name;
 }__dir_entry;
 
+int folder_stack[10];
+int folder_stack_cnt = 0;
+
 /*
  * int
  * dir_check_filter( file, filter )
@@ -188,6 +191,7 @@ int directory_list(SHORTCUT_SETTINGS *dir_settings)
 	int n_entries, prev_n_entries;
 	char *path, *ptr;
 	char *filename_path;
+	int selected_folder;
 	char *current_filter;
 	int filter_len, max_filter_len;
 	WINDOW *path_win, *list_win;
@@ -196,6 +200,8 @@ int directory_list(SHORTCUT_SETTINGS *dir_settings)
 	int win_h, win_w;
 
 	exit_code = 0;
+
+	selected_folder = -1;
 
 	/* Create sub-windows */
 	getmaxyx(__win_list, win_h, win_w);
@@ -241,6 +247,7 @@ int directory_list(SHORTCUT_SETTINGS *dir_settings)
 				/* Enter directory ? */
 				if( de->type & DT_DIR ){
 
+
 					/* Clear filter */
 					filter_len = 0;
 					current_filter[0] = 0x00;
@@ -252,6 +259,11 @@ int directory_list(SHORTCUT_SETTINGS *dir_settings)
 							ch = 'q';
 							break;
 						}
+
+						if( folder_stack_cnt > 0 )
+							selected_folder = folder_stack[--folder_stack_cnt];
+						else
+							selected_folder = -1;
 
 						/* Step up one directory */
 						if( path[strlen(path)-1] == '/' && path[1] != '\0' )
@@ -267,6 +279,14 @@ int directory_list(SHORTCUT_SETTINGS *dir_settings)
 							path[0] = '\0';
 						}
 					}else{
+
+						/* Remember where in the list we where */
+						if( folder_stack_cnt < sizeof(folder_stack) - 1  ){
+							selected_folder = vl_get_selected( visual_list );
+							folder_stack[folder_stack_cnt++] = selected_folder;
+							selected_folder = -1;
+						}
+
 						if( path == NULL )
 							path = strdup(de->name);
 						else{
@@ -280,7 +300,7 @@ int directory_list(SHORTCUT_SETTINGS *dir_settings)
 
 					wmove(path_win, 0, 0);
 					whline(path_win, ACS_HLINE, win_w - 2);
-					mvwprintw(path_win, 0, 0, "%s/%s", dir_settings->name, path);
+					mvwprintw(path_win, 0, 0, "%s/%s  %d", dir_settings->name, path, vl_get_selected(visual_list));
 					wrefresh(path_win);
 
 					vl_free_list(visual_list);
@@ -321,6 +341,9 @@ int directory_list(SHORTCUT_SETTINGS *dir_settings)
 					list = dl_list_qsort(list, dir_sort);
 
 					n_entries = directory_create_visual_list( &visual_list, list, NULL);
+
+					if( selected_folder != -1 )
+						vl_set_selected( visual_list, selected_folder );
 
 					if( n_entries < prev_n_entries ){
 						for(i=n_entries;i<prev_n_entries;i++)

@@ -21,5 +21,4 @@ int create_window_all();
 int run_program( char * program, char *arg);
 int run_program_output( char * program, char *arg);
 int run_file_handler( char *path );
-
 #endif

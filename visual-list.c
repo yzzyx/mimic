@@ -67,6 +67,7 @@ void vl_free_list( vl_list *list )
 	free( list );
 }
 
+
 void vl_int_draw_list(WINDOW *win, 
 	unsigned int width, dl_list *sel_entry, dl_list *start_entry,
 	dl_list *stop_entry)
@@ -105,6 +106,41 @@ void vl_int_draw_list(WINDOW *win,
 }
 
 
+void vl_set_selected(vl_list *list, int count)
+{
+	dl_list *node;
+	int c;
+
+	if( count > list->n_entries )
+		return;
+
+	node = list->entries;
+	for(; node->prev != NULL; node = node->prev );
+	for(c=0; node->next != NULL && c < count ; c++)
+		node = node->next;
+
+	list->selected_entry = node;
+}
+
+int vl_get_selected(vl_list *list)
+{
+	dl_list *node;
+	int count;
+
+	if( list->selected_entry == NULL )
+		list->selected_entry = list->first_visible_entry;
+
+	node = list->entries;
+	for(; node->prev != NULL; node = node->prev );
+	for(; node->next != NULL; node = node->next ){
+		if( node == list->selected_entry )
+			break;
+		count ++;
+	}
+
+	return count;
+}
+
 unsigned int vl_draw_list(WINDOW *win, vl_list *list, void **current_entry_user_ptr)
 {
 	dl_list *node;
@@ -117,6 +153,8 @@ unsigned int vl_draw_list(WINDOW *win, vl_list *list, void **current_entry_user_
 	getmaxyx(win, max_y, max_x);
 
 	if( list->first_visible_entry == NULL ){
+		char found_selected;
+
 		node = list->entries;
 		while( node && node->prev )
 			node = node->prev;
@@ -124,12 +162,37 @@ unsigned int vl_draw_list(WINDOW *win, vl_list *list, void **current_entry_user_
 		list->first_visible_entry = node;
 
 		i = 1;
+		found_selected = 0;
 		while( node && node->next && i < max_y ){
+			if( node == list->selected_entry )
+				found_selected = 1;
 			node = node->next;
 			i++;
 		}
 
 		list->last_visible_entry = node;
+
+		if( list->selected_entry != NULL && found_selected == 0 ){
+			/* Scroll down until we find our entry */
+			while( list->last_visible_entry &&
+					list->last_visible_entry->next ){
+				if( list->last_visible_entry == list->selected_entry )
+					break;
+
+				list->first_visible_entry = list->first_visible_entry->next;
+				list->last_visible_entry = list->last_visible_entry->next;
+			}
+
+			/* If possible, scroll down so that our entry is in the middle */
+			i = 0;
+			while( list->last_visible_entry &&
+					list->last_visible_entry->next &&
+					i < (max_y / 2)){
+				list->first_visible_entry = list->first_visible_entry->next;
+				list->last_visible_entry = list->last_visible_entry->next;
+				i ++;
+			}
+		}
 	}
 
 	if( list->selected_entry == NULL )

@@ -25,6 +25,7 @@ dl_list *dl_list_add(dl_list *list, void *data)
 	return node;
 }
 
+
 void dl_list_free_int(dl_list *list, int free_data)
 {
 	dl_list *node, *tmp;

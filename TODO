@@ -1,7 +1,8 @@
-[ ] autologin box/amjam123
+[ ] autologin
 [x] setup CIFS-server
 [x] bug med filmer som spelas direkt från en "huvudmapp"
 [ ] kunna ställa in olika "hanterare" för olika filtyper/filändelser
+
 
 Rtorrent
 [x] setup rtorrent
@@ -31,6 +32,8 @@ mimic
  [.] vid filvisning - ha en "header" som visar var man är
  [ ] ha en "mplayer"-modul där man kan lägga till i playlist för musik
  [ ] stöd för UTF-8
+   [x] initialt stöd
+   [ ] stöd för utf-8 i filter
  [x] en "redraw_all()"-funktion, som man kan köra efter externa program
      sabbat fönstrena
  [ ] LIRC
@@ -40,4 +43,8 @@ mimic
  [x] redraw efter exekvering
  [x] fixa segfault vid shortcut till icke-existerande path
  [ ] Debug-hantering
+
+[ ] en inställning så att man automatiskt påbörjar uppspelning av nästa fil
+[ ] ett sätt att visa en ruta i mimic utifrån, så att man kan få reda på när
+    t.ex. en fil är uppackad.
 
