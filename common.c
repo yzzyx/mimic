@@ -281,12 +281,12 @@ int run_program_output( char *program, char *arg)
 
 			output[output_n_lines-1][output_pos] = '\0';
 
-			output_n_lines ++;
-
-			if ( output_n_lines ==  max_height - 1 ){
+			if ( output_n_lines + 1 ==  max_height - 1 ){
 				close(pipe_fd[0]);
 				break;
 			}
+
+			output_n_lines ++;
 
 			if( (output = realloc(output, output_n_lines * sizeof(char *))) == NULL ){
 				return -1;
