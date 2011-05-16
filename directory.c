@@ -300,7 +300,7 @@ int directory_list(SHORTCUT_SETTINGS *dir_settings)
 
 					wmove(path_win, 0, 0);
 					whline(path_win, ACS_HLINE, win_w - 2);
-					mvwprintw(path_win, 0, 0, "%s/%s  %d", dir_settings->name, path, vl_get_selected(visual_list));
+					mvwprintw(path_win, 0, 0, "%s/%s", dir_settings->name, path);
 					wrefresh(path_win);
 
 					vl_free_list(visual_list);
